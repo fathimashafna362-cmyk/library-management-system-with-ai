@@ -1,0 +1,1334 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nova Library Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --font-display: "Instrument Serif", serif;
+        --font-body: "Inter", sans-serif;
+        --background: hsl(201 100% 13%);
+        --foreground: hsl(0 0% 100%);
+        --muted: hsl(240 4% 66%);
+        --border: hsl(0 0% 18%);
+        --panel: rgb(12 18 20 / 42%);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background: var(--background);
+        color: var(--foreground);
+        font-family: var(--font-body);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .video-bg {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        background:
+          linear-gradient(rgb(0 42 57 / 72%), rgb(0 23 32 / 86%)),
+          url("https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1800&q=80")
+            center / cover;
+      }
+
+      .video-fallback .video-bg {
+        opacity: 0;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background:
+          linear-gradient(rgb(0 42 57 / 72%), rgb(0 23 32 / 86%)),
+          url("https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1800&q=80")
+            center / cover;
+      }
+
+      .page {
+        position: relative;
+        z-index: 10;
+        min-height: 100vh;
+      }
+
+      .container {
+        width: min(100% - 32px, 1280px);
+        margin: 0 auto;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 24px 16px;
+      }
+
+      .logo,
+      h1,
+      h2,
+      .stat-value,
+      .module-title {
+        font-family: var(--font-display);
+        font-weight: 400;
+      }
+
+      .logo {
+        font-size: 32px;
+      }
+
+      .links {
+        display: none;
+        gap: 28px;
+      }
+
+      .links a {
+        color: var(--muted);
+        font-size: 14px;
+        transition: color 180ms ease;
+      }
+
+      .links a:hover {
+        color: var(--foreground);
+      }
+
+      .liquid-glass {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgb(255 255 255 / 16%);
+        background: rgb(12 18 20 / 38%);
+        box-shadow:
+          inset 0 1px 0 rgb(255 255 255 / 18%),
+          0 24px 80px rgb(0 0 0 / 24%);
+        backdrop-filter: blur(22px) saturate(135%);
+        -webkit-backdrop-filter: blur(22px) saturate(135%);
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 22px;
+        color: var(--foreground);
+        cursor: pointer;
+        transition: transform 180ms ease;
+      }
+
+      .button:hover {
+        transform: scale(1.03);
+      }
+
+      .hero-button {
+        padding: 18px 38px;
+        font-size: 16px;
+      }
+
+      .hero {
+        display: flex;
+        min-height: calc(100vh - 92px);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 96px 16px 112px;
+        text-align: center;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid rgb(255 255 255 / 16%);
+        border-radius: 999px;
+        background: rgb(12 18 20 / 38%);
+        padding: 8px 14px;
+        color: var(--foreground);
+        font-size: 12px;
+        backdrop-filter: blur(22px);
+      }
+
+      h1 {
+        max-width: 1120px;
+        margin: 28px 0 0;
+        font-size: clamp(52px, 11vw, 128px);
+        line-height: 0.95;
+      }
+
+      .hero p,
+      .lead,
+      .status {
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .hero p,
+      .lead {
+        max-width: 700px;
+        font-size: clamp(16px, 2vw, 18px);
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 40px;
+      }
+
+      section {
+        padding-bottom: 112px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .stats,
+      .operations,
+      .menu-grid,
+      .modules {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .card,
+      .panel,
+      .closed-message {
+        border-radius: 8px;
+      }
+
+      .card {
+        transition: transform 220ms ease;
+      }
+
+      .card:hover {
+        transform: translateY(-4px) scale(1.02);
+      }
+
+      .stat-card,
+      .operation-card,
+      .module-card,
+      .panel,
+      .closed-message {
+        padding: 28px;
+      }
+
+      .stat-value {
+        margin: 0;
+        font-size: 32px;
+      }
+
+      .section-head,
+      .catalog-head {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-bottom: 40px;
+      }
+
+      h2 {
+        margin: 16px 0 0;
+        font-size: clamp(44px, 7vw, 72px);
+        line-height: 1;
+      }
+
+      .icon {
+        display: flex;
+        width: 48px;
+        height: 48px;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        border: 1px solid rgb(255 255 255 / 16%);
+        border-radius: 999px;
+        background: rgb(255 255 255 / 10%);
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 500;
+      }
+
+      .card p,
+      .panel p {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      .manager {
+        display: grid;
+        gap: 24px;
+      }
+
+      .form-row,
+      .ai-row,
+      .book-row {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .menu-grid {
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .ai-panel {
+        margin-top: 22px;
+        padding: 22px;
+      }
+
+      .ai-row {
+        margin-top: 16px;
+      }
+
+      .suggestion-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .suggestion-row {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        border: 1px solid rgb(255 255 255 / 14%);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 14px;
+      }
+
+      .suggestion-row span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      input {
+        width: 100%;
+        min-height: 54px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        outline: none;
+        background: rgb(12 18 20 / 50%);
+        color: var(--foreground);
+        padding: 0 22px;
+      }
+
+      input:focus {
+        border-color: var(--foreground);
+      }
+
+      .status {
+        min-height: 24px;
+        font-size: 14px;
+      }
+
+      .book-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .book-row {
+        justify-content: space-between;
+        border: 1px solid rgb(255 255 255 / 14%);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 14px;
+      }
+
+      .book-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .icon-button {
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: 999px;
+        background: rgb(255 255 255 / 8%);
+        color: var(--foreground);
+        cursor: pointer;
+      }
+
+      .divider {
+        height: 1px;
+        margin: 24px 0;
+        background: rgb(255 255 255 / 16%);
+      }
+
+      .module-title {
+        font-size: 34px;
+        line-height: 1.05;
+      }
+
+      .hidden-file,
+      .closed-message {
+        display: none;
+      }
+
+      .app-closed .closed-message {
+        display: block;
+        margin-bottom: 80px;
+        text-align: center;
+      }
+
+      .app-closed #catalog,
+      .app-closed #resources,
+      .app-closed #members {
+        opacity: 0.25;
+        pointer-events: none;
+      }
+
+      footer {
+        padding-bottom: 64px;
+        text-align: center;
+      }
+
+      footer .lead {
+        margin: 20px auto 0;
+      }
+
+      @keyframes fade-rise {
+        from {
+          opacity: 0;
+          transform: translateY(24px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .animate-fade-rise {
+        animation: fade-rise 0.8s ease-out both;
+      }
+
+      .animate-fade-rise-delay {
+        animation: fade-rise 0.8s ease-out 0.2s both;
+      }
+
+      .animate-fade-rise-delay-2 {
+        animation: fade-rise 0.8s ease-out 0.4s both;
+      }
+
+      @media (min-width: 720px) {
+        .links {
+          display: flex;
+        }
+
+        .hero-actions,
+        .form-row,
+        .ai-row,
+        .suggestion-row,
+        .book-row {
+          flex-direction: row;
+          align-items: center;
+        }
+
+        .suggestion-row {
+          justify-content: space-between;
+        }
+
+        .section-head,
+        .catalog-head {
+          flex-direction: row;
+          align-items: end;
+          justify-content: space-between;
+        }
+
+        .manager {
+          grid-template-columns: 0.95fr 1.05fr;
+        }
+      }
+
+      @media (max-width: 719px) {
+        .container {
+          width: min(100% - 24px, 1280px);
+        }
+
+        .nav {
+          gap: 12px;
+          padding: 16px 12px;
+        }
+
+        .logo {
+          font-size: 25px;
+          line-height: 1;
+        }
+
+        .nav > .button {
+          min-height: 40px;
+          padding: 10px 14px;
+          font-size: 13px;
+          white-space: nowrap;
+        }
+
+        .hero {
+          min-height: auto;
+          padding: 70px 12px 76px;
+        }
+
+        h1 {
+          font-size: clamp(44px, 16vw, 66px);
+        }
+
+        h2 {
+          font-size: clamp(38px, 12vw, 52px);
+        }
+
+        section {
+          padding-bottom: 72px;
+        }
+
+        .stat-card,
+        .operation-card,
+        .module-card,
+        .panel,
+        .closed-message {
+          padding: 20px;
+        }
+
+        .button,
+        .hero-button {
+          width: 100%;
+          min-height: 48px;
+          padding: 12px 16px;
+        }
+
+        input {
+          min-height: 50px;
+          font-size: 16px;
+          padding: 0 16px;
+        }
+
+        .book-actions {
+          width: 100%;
+        }
+
+        .icon-button {
+          flex: 1;
+          min-width: 44px;
+        }
+
+        .catalog-head input {
+          margin-top: 4px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <video
+      id="background-video"
+      class="video-bg"
+      autoplay
+      loop
+      muted
+      playsinline
+      preload="auto"
+      poster="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1800&q=80"
+    ></video>
+
+    <main class="page" id="app">
+      <nav class="nav container">
+        <a class="logo" href="#home">Nova Library</a>
+        <div class="links" aria-label="Primary navigation">
+          <a href="#home">Home</a>
+          <a href="#catalog">Catalog</a>
+          <a href="#resources">Operations</a>
+          <a href="#members">Dashboard</a>
+          <a href="#contact">Contact</a>
+        </div>
+        <a class="button liquid-glass" href="#members">Open Dashboard</a>
+      </nav>
+
+      <section id="home" class="hero">
+        <span class="badge animate-fade-rise">Premium academic library system</span>
+        <h1 class="animate-fade-rise">Where knowledge grows beyond the shelves.</h1>
+        <p class="animate-fade-rise-delay">
+          Discover, manage, borrow, return, search, save, and load library records through one
+          modern single-page management system.
+        </p>
+        <div class="hero-actions animate-fade-rise-delay-2">
+          <a class="button hero-button liquid-glass" href="#members">Start Managing</a>
+          <a class="button hero-button liquid-glass" href="#catalog">View Catalog</a>
+        </div>
+      </section>
+
+      <section id="catalog" class="container">
+        <div class="grid stats">
+          <article class="card stat-card liquid-glass">
+            <p class="stat-value" id="available-stat">0 Available</p>
+          </article>
+          <article class="card stat-card liquid-glass">
+            <p class="stat-value" id="borrowed-stat">0 Borrowed</p>
+          </article>
+          <article class="card stat-card liquid-glass">
+            <p class="stat-value" id="total-stat">0 Total Records</p>
+          </article>
+          <article class="card stat-card liquid-glass">
+            <p class="stat-value">File Backup Ready</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="resources" class="container">
+        <div class="section-head">
+          <div>
+            <span class="badge">Menu Options</span>
+            <h2>Library Operations</h2>
+          </div>
+          <p class="lead">
+            These are the same 9 actions from your Python program, converted into clickable
+            frontend controls.
+          </p>
+        </div>
+        <div class="grid operations" id="operations"></div>
+      </section>
+
+      <section id="members" class="container">
+        <div class="manager">
+          <div>
+            <span class="badge">Live Dashboard</span>
+            <h2>Manage the collection.</h2>
+            <p class="lead">
+              Type a book name, then use the numbered buttons below. Borrow, return, and delete
+              also work from each book row.
+            </p>
+
+            <form class="form-row" id="book-form">
+              <input id="book-input" type="text" placeholder="Enter book name" aria-label="Book name" />
+              <button class="button hero-button liquid-glass" type="submit">1. Add Book</button>
+            </form>
+
+            <div class="menu-grid">
+              <button class="button liquid-glass" id="view-button" type="button">2. View All Books</button>
+              <button class="button liquid-glass" id="search-button" type="button">3. Search Book</button>
+              <button class="button liquid-glass" id="borrow-button" type="button">4. Borrow Book</button>
+              <button class="button liquid-glass" id="return-button" type="button">5. Return Book</button>
+              <button class="button liquid-glass" id="delete-button" type="button">6. Delete Book</button>
+              <button class="button liquid-glass" id="save-button" type="button">7. Save to File</button>
+              <button class="button liquid-glass" id="load-button" type="button">8. Load from File</button>
+              <button class="button liquid-glass" id="exit-button" type="button">9. Exit</button>
+            </div>
+            <input class="hidden-file" id="file-input" type="file" accept=".txt,.json" />
+            <p class="status" id="status" aria-live="polite">Library Management System ready.</p>
+
+            <article class="ai-panel liquid-glass">
+              <span class="badge">AI Book Suggestor</span>
+              <h3 style="margin-top: 16px">Suggest books by genre</h3>
+              <p>
+                Enter a genre like fantasy, science, mystery, history, business, romance, or
+                programming.
+              </p>
+              <div class="ai-row">
+                <input
+                  id="genre-input"
+                  type="text"
+                  list="genre-list"
+                  placeholder="Enter genre"
+                  aria-label="Book genre"
+                />
+                <button class="button liquid-glass" id="suggest-button" type="button">
+                  Suggest Books
+                </button>
+              </div>
+              <datalist id="genre-list">
+                <option value="Fantasy"></option>
+                <option value="Science"></option>
+                <option value="Mystery"></option>
+                <option value="History"></option>
+                <option value="Business"></option>
+                <option value="Romance"></option>
+                <option value="Programming"></option>
+                <option value="Self Help"></option>
+              </datalist>
+              <div class="suggestion-list" id="suggestion-list"></div>
+            </article>
+          </div>
+
+          <article class="panel liquid-glass">
+            <div class="catalog-head">
+              <div>
+                <h3>Available Books</h3>
+                <p id="book-count">0 books available.</p>
+              </div>
+              <input id="search-input" type="search" placeholder="Search book" aria-label="Search book" />
+            </div>
+
+            <div class="book-list" id="book-list"></div>
+
+            <div class="divider"></div>
+
+            <h3>Borrowed Books</h3>
+            <div class="book-list" id="borrowed-list" style="margin-top: 12px"></div>
+          </article>
+        </div>
+      </section>
+
+      <article class="closed-message liquid-glass container">
+        <h3>Exiting...</h3>
+        <p class="lead">Library Management System closed. Refresh the page to start again.</p>
+      </article>
+
+      <section class="container">
+        <div class="grid modules">
+          <article class="card module-card liquid-glass animate-fade-rise">
+            <h3 class="module-title">Smart Book Search</h3>
+            <p>Search by exact title or live keyword match while browsing the catalog.</p>
+          </article>
+          <article class="card module-card liquid-glass animate-fade-rise">
+            <h3 class="module-title">File Backup</h3>
+            <p>Save the library to a downloadable books.txt file and load it back later.</p>
+          </article>
+          <article class="card module-card liquid-glass animate-fade-rise">
+            <h3 class="module-title">Borrowing Records</h3>
+            <p>Track available and borrowed books separately, then return books to inventory.</p>
+          </article>
+        </div>
+      </section>
+
+      <footer id="contact" class="container">
+        <div class="divider"></div>
+        <h2>Empowering the future of learning.</h2>
+        <p class="lead">A complete browser-based library management system.</p>
+      </footer>
+    </main>
+
+    <script type="module">
+      const backendOrigin = "http://127.0.0.1:5000";
+      const apiBase = "/api/books";
+      const fallbackApiBase = `${backendOrigin}/api/books`;
+      const videoUrl =
+        "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4";
+
+      const operations = [
+        ["1", "Add Book", "Adds the typed book name to the available books list."],
+        ["2", "View All Books", "Clears search and shows every available book."],
+        ["3", "Search Book", "Finds a typed book name or filters by keyword."],
+        ["4", "Borrow Book", "Moves an available book into borrowed books."],
+        ["5", "Return Book", "Moves a borrowed book back into available books."],
+        ["6", "Delete Book", "Removes a book from the available catalog."],
+        ["7", "Save to File", "Downloads a books.txt backup file."],
+        ["8", "Load from File", "Imports a books.txt or JSON backup file."],
+        ["9", "Exit", "Closes the current frontend session."],
+      ];
+
+      const starterBooks = [
+        "Introduction to Algorithms",
+        "The Design of Everyday Things",
+        "Clean Code",
+        "Atomic Habits",
+        "Deep Work",
+      ];
+
+      const recommendationLibrary = {
+        fantasy: [
+          ["The Hobbit", "A classic adventure with rich world-building."],
+          ["A Wizard of Earthsea", "Elegant fantasy about power, identity, and responsibility."],
+          ["The Name of the Wind", "A lyrical coming-of-age story for epic fantasy readers."],
+        ],
+        science: [
+          ["A Brief History of Time", "A clear gateway into cosmology and modern physics."],
+          ["Cosmos", "A wide, inspiring journey through science and human curiosity."],
+          ["The Selfish Gene", "A powerful introduction to evolution and genetics."],
+        ],
+        mystery: [
+          ["The Hound of the Baskervilles", "A sharp detective classic with gothic atmosphere."],
+          ["And Then There Were None", "A tightly plotted mystery with constant suspense."],
+          ["The Girl with the Dragon Tattoo", "A modern investigative thriller."],
+        ],
+        history: [
+          ["Sapiens", "A broad, readable history of humankind."],
+          ["Guns, Germs, and Steel", "A big-picture look at geography and civilization."],
+          ["The Silk Roads", "A global history told through trade and culture."],
+        ],
+        business: [
+          ["The Lean Startup", "Practical ideas for building and testing products."],
+          ["Good to Great", "A study of how strong organizations improve."],
+          ["Zero to One", "A concise book on startups and original thinking."],
+        ],
+        romance: [
+          ["Pride and Prejudice", "A witty classic about love, class, and character."],
+          ["The Notebook", "A popular emotional romance."],
+          ["Me Before You", "A modern romantic drama with strong emotional stakes."],
+        ],
+        programming: [
+          ["Clean Code", "A practical guide to writing readable software."],
+          ["The Pragmatic Programmer", "Timeless habits for better developers."],
+          ["Python Crash Course", "A beginner-friendly path into Python projects."],
+        ],
+        "self help": [
+          ["Atomic Habits", "A practical system for building better habits."],
+          ["Deep Work", "A focused guide to concentration and meaningful work."],
+          ["Mindset", "A useful book about learning and growth."],
+        ],
+      };
+
+      let books = [...starterBooks];
+      let borrowedBooks = [];
+
+      const app = document.querySelector("#app");
+      const operationsElement = document.querySelector("#operations");
+      const bookForm = document.querySelector("#book-form");
+      const bookInput = document.querySelector("#book-input");
+      const searchInput = document.querySelector("#search-input");
+      const bookList = document.querySelector("#book-list");
+      const borrowedList = document.querySelector("#borrowed-list");
+      const statusElement = document.querySelector("#status");
+      const bookCount = document.querySelector("#book-count");
+      const availableStat = document.querySelector("#available-stat");
+      const borrowedStat = document.querySelector("#borrowed-stat");
+      const totalStat = document.querySelector("#total-stat");
+      const fileInput = document.querySelector("#file-input");
+      const genreInput = document.querySelector("#genre-input");
+      const suggestionList = document.querySelector("#suggestion-list");
+      const backgroundVideo = document.querySelector("#background-video");
+
+      function startBackgroundVideo() {
+        if (!(backgroundVideo instanceof HTMLVideoElement)) {
+          return;
+        }
+
+        backgroundVideo.src = videoUrl;
+        backgroundVideo.muted = true;
+        backgroundVideo.defaultMuted = true;
+        backgroundVideo.playsInline = true;
+
+        const playVideo = () => {
+          backgroundVideo.play().catch(() => {
+            document.body.classList.add("video-fallback");
+          });
+        };
+
+        backgroundVideo.addEventListener("canplay", playVideo, { once: true });
+        backgroundVideo.addEventListener("error", () => {
+          document.body.classList.add("video-fallback");
+        });
+        document.addEventListener("pointerdown", playVideo, { once: true });
+        backgroundVideo.load();
+      }
+
+      operationsElement.innerHTML = operations
+        .map(
+          ([icon, title, description]) => `
+            <article class="card operation-card liquid-glass">
+              <div class="icon">${icon}</div>
+              <h3>${title}</h3>
+              <p>${description}</p>
+            </article>
+          `,
+        )
+        .join("");
+
+      function setStatus(message) {
+        statusElement.textContent = message;
+      }
+
+      function escapeHtml(value) {
+        return value
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function findExactBook(title, collection) {
+        const normalized = title.trim().toLowerCase();
+        return collection.find((book) => book.toLowerCase() === normalized);
+      }
+
+      function findTypedBook(title, collection) {
+        const normalized = title.trim().toLowerCase();
+
+        if (!normalized) {
+          return null;
+        }
+
+        const exactMatch = collection.find((book) => book.toLowerCase() === normalized);
+        if (exactMatch) {
+          return exactMatch;
+        }
+
+        const partialMatches = collection.filter((book) => book.toLowerCase().includes(normalized));
+        return partialMatches.length === 1 ? partialMatches[0] : null;
+      }
+
+      function describeBookMatchProblem(title, collection, actionLabel, listLabel) {
+        if (!title.trim()) {
+          return "Enter a book name first.";
+        }
+
+        const matches = collection.filter((book) => book.toLowerCase().includes(title.trim().toLowerCase()));
+        if (matches.length > 1) {
+          return `More than one book matches "${title}". Type the full book name to ${actionLabel}.`;
+        }
+
+        return `Book not found in ${listLabel}. Click View All Books, then type the book title.`;
+      }
+
+      async function fetchApi(base, path = "", options = {}) {
+        return fetch(`${base}${path}`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {}),
+          },
+          ...options,
+        });
+      }
+
+      async function apiRequest(path = "", options = {}) {
+        let response = await fetchApi(apiBase, path, options);
+
+        if (response.status === 404 && window.location.port !== "5000") {
+          response = await fetchApi(fallbackApiBase, path, options);
+        }
+
+        if (!response.ok) {
+          const details = await response.json().catch(async () => ({
+            error: await response.text().catch(() => ""),
+          }));
+          throw new Error(details.error || `Request failed with status ${response.status}`);
+        }
+
+        if (response.status === 204) {
+          return null;
+        }
+
+        return response.json();
+      }
+
+      async function loadLibraryFromSupabase() {
+        const data = await apiRequest();
+        books = data.filter((book) => book.status === "available").map((book) => book.title);
+        borrowedBooks = data.filter((book) => book.status === "borrowed").map((book) => book.title);
+      }
+
+      async function refreshLibraryFromSupabase() {
+        await loadLibraryFromSupabase();
+        renderBooks();
+      }
+
+      async function insertBookInSupabase(title, status = "available") {
+        await apiRequest("", {
+          method: "POST",
+          body: JSON.stringify({ title, status }),
+        });
+      }
+
+      async function updateBookStatusInSupabase(title, status) {
+        await apiRequest(`/${encodeURIComponent(title)}`, {
+          method: "PATCH",
+          body: JSON.stringify({ status }),
+        });
+      }
+
+      async function deleteBookFromSupabase(title) {
+        await apiRequest(`/${encodeURIComponent(title)}`, {
+          method: "DELETE",
+        });
+      }
+
+      async function replaceLibraryInSupabase(nextBooks, nextBorrowedBooks) {
+        await apiRequest("", {
+          method: "PUT",
+          body: JSON.stringify({
+            books: nextBooks,
+            borrowedBooks: nextBorrowedBooks,
+          }),
+        });
+      }
+
+      function getTypedBook() {
+        return bookInput.value.trim() || searchInput.value.trim();
+      }
+
+      function normalizeGenre(value) {
+        return value.trim().toLowerCase().replaceAll("-", " ");
+      }
+
+      function suggestBooks() {
+        const genre = normalizeGenre(genreInput.value);
+        const recommendations = recommendationLibrary[genre];
+
+        if (!genre) {
+          suggestionList.innerHTML = `<p style="color: var(--muted)">Enter a genre to get suggestions.</p>`;
+          setStatus("Enter a genre for AI suggestions.");
+          return;
+        }
+
+        if (!recommendations) {
+          const genres = Object.keys(recommendationLibrary).join(", ");
+          suggestionList.innerHTML = `<p style="color: var(--muted)">No exact match. Try: ${genres}.</p>`;
+          setStatus("No suggestions found for that genre.");
+          return;
+        }
+
+        suggestionList.innerHTML = recommendations
+          .map(([title, reason]) => {
+            const safeTitle = escapeHtml(title);
+            return `
+              <div class="suggestion-row">
+                <div>
+                  <strong>${safeTitle}</strong>
+                  <span>${escapeHtml(reason)}</span>
+                </div>
+                <button class="button liquid-glass" type="button" data-add-suggestion="${safeTitle}">
+                  Add Book
+                </button>
+              </div>
+            `;
+          })
+          .join("");
+        setStatus(`AI suggestions ready for ${genre}.`);
+      }
+
+      function renderBooks() {
+        const query = searchInput.value.trim().toLowerCase();
+        const visibleBooks = query
+          ? books.filter((book) => book.toLowerCase().includes(query))
+          : books;
+
+        bookCount.textContent = `${books.length} books available.`;
+        availableStat.textContent = `${books.length} Available`;
+        borrowedStat.textContent = `${borrowedBooks.length} Borrowed`;
+        totalStat.textContent = `${books.length + borrowedBooks.length} Total Records`;
+
+        bookList.innerHTML = visibleBooks.length
+          ? visibleBooks
+              .map((book) => {
+                const safeBook = escapeHtml(book);
+                return `
+                  <div class="book-row">
+                    <strong>${safeBook}</strong>
+                    <div class="book-actions">
+                      <button class="icon-button" type="button" title="Borrow ${safeBook}" data-borrow="${safeBook}">B</button>
+                      <button class="icon-button" type="button" title="Delete ${safeBook}" data-delete="${safeBook}">X</button>
+                    </div>
+                  </div>
+                `;
+              })
+              .join("")
+          : `<p style="color: var(--muted)">No books found.</p>`;
+
+        borrowedList.innerHTML = borrowedBooks.length
+          ? borrowedBooks
+              .map((book) => {
+                const safeBook = escapeHtml(book);
+                return `
+                  <div class="book-row">
+                    <strong>${safeBook}</strong>
+                    <button class="icon-button" type="button" title="Return ${safeBook}" data-return="${safeBook}">R</button>
+                  </div>
+                `;
+              })
+              .join("")
+          : `<p style="color: var(--muted)">No borrowed books yet.</p>`;
+      }
+
+      async function addBook(title) {
+        if (!title) {
+          setStatus("Enter a book name first.");
+          return;
+        }
+
+        if (findExactBook(title, [...books, ...borrowedBooks])) {
+          setStatus("That book already exists in Supabase.");
+          return;
+        }
+
+        try {
+          await insertBookInSupabase(title);
+        } catch (error) {
+          setStatus(`Could not save book: ${error.message}`);
+          return;
+        }
+
+        books.unshift(title);
+        bookInput.value = "";
+        setStatus("Book added and saved to Supabase.");
+        renderBooks();
+      }
+
+      function viewAllBooks() {
+        searchInput.value = "";
+        setStatus(books.length ? "Showing all books." : "No books available.");
+        renderBooks();
+      }
+
+      function searchBook() {
+        const title = getTypedBook();
+        if (!title) {
+          searchInput.focus();
+          setStatus("Type a book name in the input to search.");
+          return;
+        }
+
+        searchInput.value = title;
+        const foundBook = [...books, ...borrowedBooks].some((book) => book.toLowerCase().includes(title.toLowerCase()));
+        setStatus(foundBook ? "Book found." : "Book not found.");
+        renderBooks();
+      }
+
+      async function borrowBook(title) {
+        try {
+          await refreshLibraryFromSupabase();
+        } catch (error) {
+          setStatus(`Could not refresh Supabase books: ${error.message}`);
+          return;
+        }
+
+        const book = findTypedBook(title, books);
+        if (!book) {
+          setStatus(describeBookMatchProblem(title, books, "borrow it", "available books"));
+          return;
+        }
+
+        try {
+          await updateBookStatusInSupabase(book, "borrowed");
+        } catch (error) {
+          setStatus(`Could not borrow book: ${error.message}`);
+          return;
+        }
+
+        books = books.filter((item) => item !== book);
+        borrowedBooks.unshift(book);
+        bookInput.value = "";
+        setStatus("Book borrowed and saved to Supabase.");
+        renderBooks();
+      }
+
+      async function returnBook(title) {
+        try {
+          await refreshLibraryFromSupabase();
+        } catch (error) {
+          setStatus(`Could not refresh Supabase books: ${error.message}`);
+          return;
+        }
+
+        const book = findTypedBook(title, borrowedBooks);
+        if (!book) {
+          setStatus(describeBookMatchProblem(title, borrowedBooks, "return it", "borrowed books"));
+          return;
+        }
+
+        try {
+          await updateBookStatusInSupabase(book, "available");
+        } catch (error) {
+          setStatus(`Could not return book: ${error.message}`);
+          return;
+        }
+
+        borrowedBooks = borrowedBooks.filter((item) => item !== book);
+        books.unshift(book);
+        bookInput.value = "";
+        setStatus("Book returned and saved to Supabase.");
+        renderBooks();
+      }
+
+      async function deleteBook(title) {
+        try {
+          await refreshLibraryFromSupabase();
+        } catch (error) {
+          setStatus(`Could not refresh Supabase books: ${error.message}`);
+          return;
+        }
+
+        const book = findTypedBook(title, [...books, ...borrowedBooks]);
+        if (!book) {
+          setStatus(describeBookMatchProblem(title, [...books, ...borrowedBooks], "delete it", "Supabase"));
+          return;
+        }
+
+        try {
+          await deleteBookFromSupabase(book);
+        } catch (error) {
+          setStatus(`Could not delete book: ${error.message}`);
+          return;
+        }
+
+        books = books.filter((item) => item !== book);
+        borrowedBooks = borrowedBooks.filter((item) => item !== book);
+        bookInput.value = "";
+        setStatus("Book deleted from Supabase.");
+        renderBooks();
+      }
+
+      function saveToFile() {
+        const backup = {
+          books,
+          borrowedBooks,
+          savedAt: new Date().toISOString(),
+        };
+        const blob = new Blob([JSON.stringify(backup, null, 2)], {
+          type: "text/plain",
+        });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "books.txt";
+        link.click();
+        URL.revokeObjectURL(link.href);
+        setStatus("Books saved successfully.");
+      }
+
+      function parseBookFile(text) {
+        try {
+          const data = JSON.parse(text);
+          if (Array.isArray(data)) {
+            return { books: data.map(String), borrowedBooks: [] };
+          }
+          if (data && Array.isArray(data.books)) {
+            return {
+              books: data.books.map(String),
+              borrowedBooks: Array.isArray(data.borrowedBooks) ? data.borrowedBooks.map(String) : [],
+            };
+          }
+        } catch {
+          const pythonListText = text.trim().replaceAll("'", '"');
+          const data = JSON.parse(pythonListText);
+          if (Array.isArray(data)) {
+            return { books: data.map(String), borrowedBooks: [] };
+          }
+        }
+
+        throw new Error("Invalid file");
+      }
+
+      function loadFromFile(file) {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            const data = parseBookFile(String(reader.result));
+            await replaceLibraryInSupabase(data.books.map(String), data.borrowedBooks.map(String));
+            books = data.books.map(String);
+            borrowedBooks = data.borrowedBooks.map(String);
+            searchInput.value = "";
+            setStatus("Books loaded and saved to Supabase.");
+            renderBooks();
+          } catch (error) {
+            setStatus(`Could not load file: ${error.message}`);
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      bookForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        addBook(getTypedBook());
+      });
+
+      searchInput.addEventListener("input", renderBooks);
+
+      document.querySelector("#view-button").addEventListener("click", viewAllBooks);
+      document.querySelector("#search-button").addEventListener("click", searchBook);
+      document.querySelector("#borrow-button").addEventListener("click", () => borrowBook(getTypedBook()));
+      document.querySelector("#return-button").addEventListener("click", () => returnBook(getTypedBook()));
+      document.querySelector("#delete-button").addEventListener("click", () => deleteBook(getTypedBook()));
+      document.querySelector("#save-button").addEventListener("click", saveToFile);
+      document.querySelector("#load-button").addEventListener("click", () => fileInput.click());
+      document.querySelector("#suggest-button").addEventListener("click", suggestBooks);
+      genreInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          suggestBooks();
+        }
+      });
+      document.querySelector("#exit-button").addEventListener("click", () => {
+        setStatus("Exiting...");
+        app.classList.add("app-closed");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      fileInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          loadFromFile(file);
+        }
+        event.target.value = "";
+      });
+
+      document.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) {
+          return;
+        }
+
+        const borrowTitle = target.dataset.borrow;
+        const deleteTitle = target.dataset.delete;
+        const returnTitle = target.dataset.return;
+        const suggestionTitle = target.dataset.addSuggestion;
+
+        if (borrowTitle) {
+          borrowBook(borrowTitle);
+        }
+
+        if (deleteTitle) {
+          deleteBook(deleteTitle);
+        }
+
+        if (returnTitle) {
+          returnBook(returnTitle);
+        }
+
+        if (suggestionTitle) {
+          addBook(suggestionTitle);
+          setStatus(`${suggestionTitle} added from AI suggestions.`);
+        }
+      });
+
+      async function initializeLibrary() {
+        startBackgroundVideo();
+        renderBooks();
+        setStatus("Connecting to Supabase backend...");
+
+        try {
+          await loadLibraryFromSupabase();
+          renderBooks();
+          setStatus("Connected to Supabase. Library records loaded.");
+        } catch (error) {
+          renderBooks();
+          setStatus(`Supabase backend error: ${error.message}`);
+        }
+      }
+
+      initializeLibrary();
+    </script>
+  </body>
+</html>
